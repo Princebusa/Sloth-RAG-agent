@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +5,72 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+
+enum EmbeddingProvider {
+  OPENAI
+}
+
+model User {
+  id               String   @id @default(cuid())
+  googleAccountId String   @unique
+  email            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  driveFiles     DriveFile[]
+  syncStates     DriveSyncState[]
+}
+
+model DriveSyncState {
+  id         String @id @default(cuid())
+  accountId  String
+  account    User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  lastChangeId BigInt?
+  pageToken    String?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model DriveFile {
+  id           String @id @default(cuid())
+  accountId    String
+  account      User @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  fileId       String
+  name         String
+  mimeType     String
+  webViewLink  String?
+  sizeBytes    BigInt?
+  trashed      Boolean @default(false)
+  createdTime  DateTime?
+  modifiedTime DateTime?
+  lastSyncedAt DateTime @default(now())
+  extractedAt  DateTime?
+}
+
+
+
+model Chunk {
+  id         String @id @default(cuid())
+  driveFileId String
+  chunkIndex Int
+  charStart  Int?
+  charEnd    Int?
+  tokenCount Int?
+  text        String @db.Text
+  contentHash String
+  createdAt DateTime @default(now())
+  embeddingRefs EmbeddingRef[]
+}
+
+model EmbeddingRef {
+  id     String @id @default(cuid())
+  chunkId String
+  chunk  Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  qdrantCollection String
+  vectorId         String @db.VarChar(128)
+  provider   EmbeddingProvider
+  model      String
+  dimensions Int?
+  createdAt DateTime @default(now())
 }
