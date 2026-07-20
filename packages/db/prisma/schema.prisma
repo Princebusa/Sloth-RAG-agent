@@ -15,7 +15,8 @@ enum EmbeddingProvider {
 model User {
   id               String   @id @default(cuid())
   googleAccountId String   @unique
-  email            String?
+  email            String?  @unique
+  password         String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   driveFiles     DriveFile[]
