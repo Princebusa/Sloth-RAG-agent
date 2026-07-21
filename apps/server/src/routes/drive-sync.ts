@@ -1,29 +1,13 @@
 import { Router } from "express";
 import { addDriveSyncJob } from "redis";
 import { prisma } from "db";
+import { authMiddleware } from "../Middleware/auth.middleware";
+import { getValidGoogleAccessToken } from "../services/google-token";
 
 const router = Router();
 
-type SyncRequestBody = {
-  userId?: string;
-  accessToken?: string;
-};
-
-router.post("/sync", async (req, res) => {
-  const body = req.body as SyncRequestBody;
-
-  const userId = body.userId?.trim();
-  const accessToken = body.accessToken?.trim();
-
-  if (!userId) {
-    res.status(400).json({ error: "userId is required" });
-    return;
-  }
-
-  if (!accessToken) {
-    res.status(400).json({ error: "accessToken is required" });
-    return;
-  }
+router.post("/sync", authMiddleware, async (req, res) => {
+  const userId = req.userId;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -34,17 +18,25 @@ router.post("/sync", async (req, res) => {
     return;
   }
 
-  const jobId = await addDriveSyncJob({
-    userId,
-    accessToken,
-  });
+  try {
+    const accessToken = await getValidGoogleAccessToken(userId);
 
-  res.json({
-    ok: true,
-    message: "Drive sync job added to queue",
-    jobId,
-    userId,
-  });
+    const jobId = await addDriveSyncJob({
+      userId,
+      accessToken,
+    });
+
+    res.json({
+      ok: true,
+      message: "Drive sync job added to queue",
+      jobId,
+      userId,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Sync failed";
+    const status = message.includes("refresh token") ? 400 : 502;
+    res.status(status).json({ error: message });
+  }
 });
 
 export default router;
