@@ -1,26 +1,136 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.875rem;
+
+  /* Warm sand + amber rust */
+  --background: #f7f1e8;
+  --foreground: #1c1410;
+
+  --surface: #fffaf3;
+  --surface-elevated: #f3ebe0;
+
+  --card: #fffaf3;
+  --card-foreground: #1c1410;
+  --popover: #fffaf3;
+  --popover-foreground: #1c1410;
+
+  --primary: #c45c26;
+  --primary-foreground: #fffaf3;
+
+  --secondary: #efe4d4;
+  --secondary-foreground: #1c1410;
+
+  --muted: #efe4d4;
+  --muted-foreground: #7a6554;
+
+  --accent: #a34a1c;
+  --accent-foreground: #fffaf3;
+
+  --destructive: #b42318;
+  --destructive-foreground: #fffaf3;
+
+  --border: #e4d5c3;
+  --input: #e4d5c3;
+  --ring: #c45c26;
+
+  --gradient-hero: radial-gradient(
+      ellipse 70% 55% at 78% -5%,
+      color-mix(in oklab, #c45c26 18%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 45% 40% at 8% 25%,
+      color-mix(in oklab, #d4a373 16%, transparent) 0%,
+      transparent 60%
+    );
+  --gradient-glow: linear-gradient(
+    135deg,
+    #c45c26 0%,
+    #d97706 55%,
+    #e8a54b 100%
+  );
+  --shadow-glow: 0 0 56px -12px color-mix(in oklab, #c45c26 38%, transparent);
+  --shadow-soft: 0 22px 56px -30px rgb(28 20 16 / 0.2);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 25%, transparent);
+    color: var(--primary-foreground);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility text-gradient {
+  background: var(--gradient-glow);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-hero-glow {
+  background: var(--gradient-hero);
+}
+
+@utility surface-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+@utility dotted-grid {
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
 }
