@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { runChatTurn } from "@/lib/agent/run-chat-turn";
 import { prisma } from "db";
 import { NextResponse } from "next/server";
 
@@ -16,7 +17,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const { chatId } = await context.params;
 
-  const chat =  prisma.chat.findFirst({
+  const chat = await prisma.chat.findFirst({
     where: { id: chatId, userId },
     include: {
       messages: {
@@ -71,24 +72,18 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
 
-  const created = await prisma.message.create({
-    data: {
-      chatId,
-      role: "user",
-      content: message,
-    },
-    select: {
-      id: true,
-      role: true,
-      content: true,
-      createdAt: true,
-    },
+  const result = await runChatTurn({
+    userId,
+    chatId,
+    userMessage: message,
   });
 
-  await prisma.chat.update({
-    where: { id: chatId },
-    data: { updatedAt: new Date() },
-  });
-
-  return NextResponse.json({ message: created }, { status: 201 });
+  return NextResponse.json(
+    {
+      message: result.userMessage,
+      assistantMessage: result.assistantMessage,
+      sources: result.sources,
+    },
+    { status: 201 },
+  );
 }

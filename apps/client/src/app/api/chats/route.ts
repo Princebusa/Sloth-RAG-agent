@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { runChatTurn } from "@/lib/agent/run-chat-turn";
 import { prisma } from "db";
 import { NextResponse } from "next/server";
 
@@ -49,21 +50,22 @@ export async function POST(request: Request) {
   const title =
     message.length > 48 ? `${message.slice(0, 48).trim()}…` : message;
 
+  // Create empty chat first (agent loop will save the user + assistant messages)
   const chat = await prisma.chat.create({
     data: {
       userId,
       title,
-      messages: {
-        create: {
-          role: "user",
-          content: message,
-        },
-      },
     },
     select: {
       id: true,
       title: true,
     },
+  });
+
+  await runChatTurn({
+    userId,
+    chatId: chat.id,
+    userMessage: message,
   });
 
   return NextResponse.json({ chat }, { status: 201 });
