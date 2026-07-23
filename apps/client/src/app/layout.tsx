@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, Inter } from "next/font/google";
+import { Instrument_Serif, Inter, Geist } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,14 +33,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={cn(
+        "h-full antialiased font-sans",
+        inter.variable,
+        instrumentSerif.variable,
+        geist.variable,
+      )}
     >
       <body className="flex min-h-full flex-col font-sans">
-        <AuthProvider>
-          <Header />
-          <div className="flex flex-1 flex-col">{children}</div>
-          <Footer />
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
