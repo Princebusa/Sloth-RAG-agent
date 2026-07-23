@@ -16,7 +16,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const { chatId } = await context.params;
 
-  const chat = await prisma.chat.findFirst({
+  const chat =  prisma.chat.findFirst({
     where: { id: chatId, userId },
     include: {
       messages: {

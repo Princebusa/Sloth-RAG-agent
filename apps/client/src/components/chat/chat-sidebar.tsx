@@ -4,11 +4,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
-import { LogOut, MessageSquarePlus, PanelLeftClose, PanelLeft } from "lucide-react";
+import {
+  LogOut,
+  MessageSquarePlus,
+  PanelLeft,
+  PanelLeftClose,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/logo";
+import { MyDriveBox } from "@/components/chat/my-drive-box";
 import { cn } from "@/lib/utils";
 
 type ChatItem = {
@@ -23,9 +29,21 @@ type ChatSidebarProps = {
     email?: string | null;
     image?: string | null;
   };
+  driveSync: {
+    hasSynced: boolean;
+    inProgress: boolean;
+    status: "IDLE" | "QUEUED" | "RUNNING" | "FAILED";
+    lastSyncedAt?: string | null;
+    errorMessage?: string | null;
+  };
+  onOpenSyncDialog?: () => void;
 };
 
-export function ChatSidebar({ user }: ChatSidebarProps) {
+export function ChatSidebar({
+  user,
+  driveSync,
+  onOpenSyncDialog,
+}: ChatSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [chats, setChats] = useState<ChatItem[]>([]);
@@ -90,7 +108,7 @@ export function ChatSidebar({ user }: ChatSidebarProps) {
         </Button>
       </div>
 
-      <div className="px-3 pb-2">
+      <div className="space-y-2 px-3 pb-2">
         <Button
           variant="outline"
           className="w-full justify-start gap-2"
@@ -99,11 +117,19 @@ export function ChatSidebar({ user }: ChatSidebarProps) {
           <MessageSquarePlus className="size-4" />
           New chat
         </Button>
+
+       
       </div>
 
       <Separator />
 
-      <ScrollArea className="flex-1 px-2 py-2">
+      <div className="px-3 pt-3 pb-1">
+        <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+          Chats
+        </p>
+      </div>
+
+      <ScrollArea className="flex-1 px-2 pb-2">
         <div className="space-y-0.5">
           {loading ? (
             <p className="px-2 py-3 text-xs text-muted-foreground">Loading…</p>
@@ -132,17 +158,21 @@ export function ChatSidebar({ user }: ChatSidebarProps) {
           )}
         </div>
       </ScrollArea>
-
+        <MyDriveBox
+          hasSynced={driveSync.hasSynced}
+          inProgress={driveSync.inProgress}
+          status={driveSync.status}
+          lastSyncedAt={driveSync.lastSyncedAt}
+          errorMessage={driveSync.errorMessage}
+          onOpenSyncDialog={onOpenSyncDialog}
+        />
       <Separator />
+     
 
       <div className="flex items-center gap-2 px-3 py-3">
         {user.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.image}
-            alt=""
-            className="size-7 rounded-full"
-          />
+          <img src={user.image} alt="" className="size-7 rounded-full" />
         ) : (
           <div className="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium">
             {(user.name ?? user.email ?? "U").slice(0, 1).toUpperCase()}
