@@ -18,10 +18,8 @@ function getGoogleOAuthCredentials() {
   return { clientId, clientSecret };
 }
 
-
-export async function getValidGoogleAccessToken(
-  userId: string,
-) {
+/** Return a valid Google access token, refreshing with the stored refresh token if needed. */
+export async function getValidGoogleAccessToken(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
